@@ -1,5 +1,6 @@
 //use "g++ main.cpp glad.c -Iinclude -lglfw -ldl -lGL -o main" to compile
 
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -126,7 +127,14 @@ int main(){
     glm::mat4 trans = glm::mat4(1.0f);
     trans = glm::translate(trans, glm::vec3(0.0f,0.0f,1.0f));
     trans = glm::rotate(trans, glm::radians(0.0f), glm::vec3(0.0f,0.0f,1.0f));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f,0.0f,1.0f));
+    model = glm::rotate(model, glm::radians(-55.0f),glm::vec3(1.0f,0.0f,0.0f));
     
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f),(float)width/(float)height,0.1f,100.f);
+
+
     while(!glfwWindowShouldClose(window)){
         processInput(window, &visibility, &trans);
 
