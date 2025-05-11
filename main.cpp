@@ -319,7 +319,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn){
     lastX = xpos;
     lastY = ypos;
 
-    const float sensitivity = 0.1f/200;
+    const float sensitivity = 1.f;
     xoffset*=sensitivity;
     yoffset*=sensitivity;
 

@@ -17,7 +17,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 float yaw = -90.0f;
 float pitch = 0.0f;
 
-glm::vec3 cameraPos = glm::vec3(0.0f,0.0f,10.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f,0.0f,3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
 float lastX = 400, lastY = 300;
@@ -31,7 +31,7 @@ float deltatime = glfwGetTime() - currentFrame;
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-glm::vec3 lightPos(2.0f,2.5f, 2.0f);
+glm::vec3 lightPos(1.2f,0.0f, 2.0f);
 
 int main(){
 
@@ -138,17 +138,25 @@ int main(){
     glm::mat4 model2 = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     
-    
     while(!glfwWindowShouldClose(window)){
         processInput(window);
         glClearColor(0.1f,0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
         shaderProgram.use();
-        shaderProgram.setVec3("objectColor", 1.0f,0.5f, 0.31f);
-        shaderProgram.setVec3("lightColor", 1.0f,1.0f, 1.0f);
-        shaderProgram.setVec3("lightPos", lightPos);
         
+        shaderProgram.setVec3("light.position", lightPos);
+        shaderProgram.setVec3("viewPos", cameraPos);
+
+        shaderProgram.setVec3("light.ambient", 1.0f,1.0f,1.0f);
+        shaderProgram.setVec3("light.diffuse", 1.0f,1.0f,1.0f);
+        shaderProgram.setVec3("light.specular", 1.0f,1.0f,1.0f);
+
+        shaderProgram.setVec3("material.ambient", 0.24725f,0.1995f,0.0745f);
+        shaderProgram.setVec3("material.diffuse", 0.75164f,0.60648f,0.22648f);
+        shaderProgram.setVec3("material.specular", 0.628281f,0.555802f,0.366065f);
+        shaderProgram.setFloat("material.shininess", 64.0f);
 
         deltatime = glfwGetTime() - currentFrame;
         currentFrame = glfwGetTime();
@@ -156,11 +164,12 @@ int main(){
 
         model = glm::mat4(1.0f);
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f,100.0f);
-
-        shaderProgram.setMat4("model",model);
+        
         shaderProgram.setMat4("view",view);
         shaderProgram.setMat4("projection",projection);
+        shaderProgram.setMat4("model",model);
 
         glBindVertexArray(VAO);
 
@@ -168,6 +177,7 @@ int main(){
 
         shaderProgramLight.use();
         
+        model = glm::mat4(1.0f);
         model = glm::translate(model,lightPos);
         model = glm::scale(model,glm::vec3(0.2f));
         shaderProgramLight.setMat4("projection",projection);
@@ -238,7 +248,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn){
     lastX = xpos;
     lastY = ypos;
 
-    const float sensitivity = 0.1f/200;
+    const float sensitivity = 0.1f;
     xoffset*=sensitivity;
     yoffset*=sensitivity;
 
