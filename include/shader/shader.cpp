@@ -9,8 +9,15 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try{
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
+        
+    if (!vShaderFile.is_open()) {
+        std::cerr << "ERROR::SHADER::VERTEX FILE NOT READ: " << vertexPath << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    if (!fShaderFile.is_open()) {
+        std::cerr << "ERROR::SHADER::FRAGMENT FILE NOT READ: " << fragmentPath << std::endl;
+        exit(EXIT_FAILURE);
+    }
         std::stringstream vShaderStream,fShaderStream;
         
         vShaderStream << vShaderFile.rdbuf();
@@ -125,6 +132,13 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
+
+void Shader::setMaterial(const Material &material) const{
+    glUniform1i(glGetUniformLocation(ID, "material.diffuse"), material.textureUnit);
+    glUniform3f(glGetUniformLocation(ID, "material.specular"), material.specular.x,material.specular.y,material.specular.z);
+    glUniform1f(glGetUniformLocation(ID,"material.shininess"), material.shininess);
+}
+
 Shader::~Shader(){
     if(ID != 0)
     glDeleteProgram(ID);

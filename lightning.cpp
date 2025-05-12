@@ -3,8 +3,9 @@
 #include <iostream>
 #include "math.h"
 #include "shader/shader.h"
-#include "std_img/stb_image_implementation.h"
+#include "camera/camera.h"
 #include "materials/material.h"
+#include "std_img/stb_image_implementation.h"
 
 #include <glm/glm/glm.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
@@ -14,25 +15,66 @@
 void framebuffer_size_callback(GLFWwindow* window,int width, int heigh);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-
-float yaw = -90.0f;
-float pitch = 0.0f;
-
-glm::vec3 cameraPos = glm::vec3(0.0f,0.0f,10.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f,0.0f,-1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
-float lastX = 400, lastY = 300;
-bool firstMouse = true;
-float cameraSpeed = 5.0f;
-float cameraVelocity = 0.0f;
-
-const float radius = 10.0f;
-float currentFrame = glfwGetTime();
-float deltatime = glfwGetTime() - currentFrame;
+unsigned int loadTexture(const char* path);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-glm::vec3 lightPos(2.0f,2.5f, 2.0f);
+
+Camera camera(glm::vec3(0.0f,0.0f,3.0f));
+float lastX = SCR_WIDTH/2.0f, lastY = SCR_HEIGHT/2.0f;
+bool firstMouse = true;
+
+const float radius = 10.0f;
+float currentFrame = 0.0f;
+float deltatime = 0.0f;
+
+glm::vec3 lightPos(0.0f,0.0f, 0.0f);
+
+//data
+float vertices[] = {
+    // positions          // normals           // texture coords
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+};
 
 int main(){
 
@@ -63,50 +105,6 @@ int main(){
     Shader shaderProgram("shaderFiles/vertexCode3D_lightning.vs","shaderFiles/fragmentCode_lightning.fs");
     Shader shaderProgramLight("shaderFiles/vertexCode3D_lightsource.vs","shaderFiles/fragmentCode_lightshader.fs");
 
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
-
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -117,10 +115,12 @@ int main(){
 
     glBindVertexArray(VAO);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
@@ -131,46 +131,62 @@ int main(){
     glEnableVertexAttribArray(0);
 
     glm::mat4 view;
-    view = glm::lookAt(glm::vec3(0.0f,0.0f,0.0f),
-                       glm::vec3(0.0f,0.0f,3.0f),
-                       glm::vec3(0.0f,1.0f,0.0f));
 
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 model2 = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
-    
-    
-    //Materials
+
+    //Genereting texture
+    unsigned int  textureID = loadTexture("container2.png");
+    int textureUnit = 0;
+
+    Material containerMat(textureID,textureUnit,glm::vec3(0.5f,0.5f,0.5f), 32.0f);
+
+    shaderProgram.use();
+    shaderProgram.setInt("material.diffuse",containerMat.textureUnit);
 
     while(!glfwWindowShouldClose(window)){
         processInput(window);
         glClearColor(0.1f,0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shaderProgram.use();
-        shaderProgram.setVec3("objectColor", 1.0f,0.5f, 0.31f);
-        shaderProgram.setVec3("lightColor", 1.0f,1.0f, 1.0f);
-        shaderProgram.setVec3("lightPos", lightPos);
-        
-
         deltatime = glfwGetTime() - currentFrame;
         currentFrame = glfwGetTime();
-        cameraVelocity = cameraSpeed*deltatime;
+
+        //bind texture
+        glActiveTexture(GL_TEXTURE0 + containerMat.textureUnit);
+        glBindTexture(GL_TEXTURE_2D, containerMat.textureID);
+
+        //drawing cube with material
+        shaderProgram.use();
+        
+        shaderProgram.setVec3("light.position", lightPos);
+        shaderProgram.setVec3("viewPos", camera.GetPos());
+
+        shaderProgram.setVec3("light.ambient", 1.0f,1.0f,1.0f);
+        shaderProgram.setVec3("light.diffuse", 1.0f,1.0f,1.0f);
+        shaderProgram.setVec3("light.specular", 1.0f,1.0f,1.0f);
+
+        shaderProgram.setMaterial(containerMat);
 
         model = glm::mat4(1.0f);
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        view = camera.GetViewMatrix();
+        model = glm::translate(model, glm::vec3(sin(glfwGetTime())*2.0f + lightPos.x,0.0f, cos(glfwGetTime())*2.0f + lightPos.z));
+        model = glm::rotate(model, glm::radians(-(float)glfwGetTime()*100.0f),glm::vec3(0.0f,1.0f,0.0f));
+        
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f,100.0f);
-
-        shaderProgram.setMat4("model",model);
+        
         shaderProgram.setMat4("view",view);
         shaderProgram.setMat4("projection",projection);
+        shaderProgram.setMat4("model",model);
 
         glBindVertexArray(VAO);
-
         glDrawArrays(GL_TRIANGLES, 0 ,36);
 
+        //draw light scource
         shaderProgramLight.use();
         
+        model = glm::mat4(1.0f);
         model = glm::translate(model,lightPos);
         model = glm::scale(model,glm::vec3(0.2f));
         shaderProgramLight.setMat4("projection",projection);
@@ -204,59 +220,77 @@ void processInput(GLFWwindow* window){
         glfwSetWindowShouldClose(window,true);
 
     if(glfwGetKey(window, GLFW_KEY_D)==GLFW_PRESS){
-            cameraPos += glm::normalize(glm::cross(cameraFront,cameraUp))*cameraVelocity; 
+            camera.ProcessKeyboard(RIGHT, deltatime);
         }
         if(glfwGetKey(window, GLFW_KEY_A)==GLFW_PRESS){
-            cameraPos -= glm::normalize(glm::cross(cameraFront,cameraUp))*cameraVelocity; 
+            camera.ProcessKeyboard(LEFT, deltatime); 
         }
         if(glfwGetKey(window, GLFW_KEY_S)==GLFW_PRESS){
-            cameraPos-= cameraVelocity*cameraFront;
+            camera.ProcessKeyboard(BACKWARD, deltatime);
         }
         if(glfwGetKey(window, GLFW_KEY_W)==GLFW_PRESS){
-            cameraPos+= cameraVelocity*cameraFront;
+            camera.ProcessKeyboard(FORWARD, deltatime);
         }
         if(glfwGetKey(window, GLFW_KEY_SPACE)==GLFW_PRESS){
-            cameraPos += glm::cross(glm::normalize(glm::cross(cameraFront,cameraUp)),cameraFront)*cameraVelocity;  
+            camera.ProcessKeyboard(UP, deltatime); 
         }
         if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)==GLFW_PRESS){
-            cameraPos -= glm::cross(glm::normalize(glm::cross(cameraFront,cameraUp)),cameraFront)*cameraVelocity; 
+            camera.ProcessKeyboard(DOWN, deltatime); 
         }
 }
 
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn){
-    
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
-
-    if(firstMouse){
+    if (firstMouse)
+    {
         lastX = xpos;
         lastY = ypos;
         firstMouse = false;
     }
-    
-    
 
     float xoffset = xpos - lastX;
-    float yoffset = ypos - lastY;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
     lastX = xpos;
     lastY = ypos;
 
-    const float sensitivity = 0.1f/200;
-    xoffset*=sensitivity;
-    yoffset*=sensitivity;
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
 
-    yaw += xoffset;
-    pitch -= yoffset;
+unsigned int loadTexture(const char* path){
+    unsigned int texture;
+    glGenTextures(1,&texture);
 
-    if(pitch > 89.0f)
-        pitch = 89.0f;
-    if(pitch < -89.0f)
-        pitch = -89.0f;
-    
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw))*cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw))*cos(glm::radians(pitch));
+    //Texture loading
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(path,&width,&height,&nrChannels,0);
+    if(data){
+        GLenum format;
+        if(nrChannels == 1)
+            format = GL_RED;
+        if(nrChannels == 3)
+            format = GL_RGB;
+        if(nrChannels == 4)
+            format = GL_RGBA;
 
-    cameraFront = glm::normalize(direction);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glTexImage2D(GL_TEXTURE_2D,0,format,width,height,0,format,GL_UNSIGNED_BYTE,data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }else{
+        std::cout << "Failed to load texture" << std::endl;
+        stbi_image_free(data);
+    }
+
+    return texture;
 }

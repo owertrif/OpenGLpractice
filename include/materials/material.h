@@ -13,25 +13,13 @@
 
 class Material{
 public:
-    Material(glm::vec3 ambient(0.0f,0.0f,0.0f), glm::vec3 diffuse(0.0f,0.0f,0.0f), glm::vec3::specular(0.0f,0.0f,0.0f), float shininess) : this->ambient(ambient),
-                                                                                                                                           this->diffuse(diffuse),
-                                                                                                                                           this->specular(specular),
-                                                                                                                                           this->shininess(shininess);
-                                                                                                                                           
-    Material(float ambr, float ambg, float ambb,float diffr, float diffg, float diffb,float specr, float specg, float specb, float shinines);
-
-
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
+    unsigned int textureID;
+    int textureUnit;
     glm::vec3 specular;
     float shininess;
-}
 
-Material::Material(float ambr, float ambg, float ambb,float diffr, float diffg, float diffb,float specr, float specg, float specb, float shinines){
-    this->ambient = glm::vec3(ambr,ambg,ambb);
-    this->diffuse = glm::vec3(diffr,diffg,diffb);
-    this->specular = glm::vec3(specr,specg,specb);
-    this->shininess = shininess;
-}
+    Material(unsigned int textureID = 0, int textureUnit = 0, glm::vec3 specular = glm::vec3(0.0f,0.0f,0.0f), float shininess = 0.0f);                                                                                                                                   
+    Material(unsigned int textureID, int textureUnit,float specr, float specg, float specb, float shinines);
+};
 
 #endif
