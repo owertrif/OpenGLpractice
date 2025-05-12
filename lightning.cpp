@@ -4,6 +4,7 @@
 #include "math.h"
 #include "shader/shader.h"
 #include "std_img/stb_image_implementation.h"
+#include "materials/material.h"
 
 #include <glm/glm/glm.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
@@ -139,6 +140,8 @@ int main(){
     glm::mat4 projection = glm::mat4(1.0f);
     
     
+    //Materials
+
     while(!glfwWindowShouldClose(window)){
         processInput(window);
         glClearColor(0.1f,0.1f, 0.1f, 1.0f);
