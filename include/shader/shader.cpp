@@ -9,15 +9,8 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath){
     vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try{
-        
-    if (!vShaderFile.is_open()) {
-        std::cerr << "ERROR::SHADER::VERTEX FILE NOT READ: " << vertexPath << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    if (!fShaderFile.is_open()) {
-        std::cerr << "ERROR::SHADER::FRAGMENT FILE NOT READ: " << fragmentPath << std::endl;
-        exit(EXIT_FAILURE);
-    }
+        vShaderFile.open(vertexPath);
+        fShaderFile.open(fragmentPath);
         std::stringstream vShaderStream,fShaderStream;
         
         vShaderStream << vShaderFile.rdbuf();

@@ -12,9 +12,9 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime){
         if(direction == LEFT)
             Position -= Right * velocity;
         if(direction == UP)
-            Position += glm::cross(glm::normalize(glm::cross(Front,Up)),Front) * velocity;
+            Position += WorldUp * velocity;
         if(direction == DOWN)
-            Position -= glm::cross(glm::normalize(glm::cross(Front,Up)),Front) * velocity;
+            Position -= WorldUp * velocity;
 }
 
 glm::mat4 Camera::GetViewMatrix(){

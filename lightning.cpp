@@ -127,7 +127,7 @@ int main(){
     glBindVertexArray(lightVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE, 6*sizeof(float), (void*)0);
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE, 8*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     glm::mat4 view;
@@ -142,9 +142,6 @@ int main(){
 
     Material containerMat(textureID,textureUnit,glm::vec3(0.5f,0.5f,0.5f), 32.0f);
 
-    shaderProgram.use();
-    shaderProgram.setInt("material.diffuse",containerMat.textureUnit);
-
     while(!glfwWindowShouldClose(window)){
         processInput(window);
         glClearColor(0.1f,0.1f, 0.1f, 1.0f);
@@ -152,10 +149,6 @@ int main(){
 
         deltatime = glfwGetTime() - currentFrame;
         currentFrame = glfwGetTime();
-
-        //bind texture
-        glActiveTexture(GL_TEXTURE0 + containerMat.textureUnit);
-        glBindTexture(GL_TEXTURE_2D, containerMat.textureID);
 
         //drawing cube with material
         shaderProgram.use();
