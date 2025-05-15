@@ -127,8 +127,9 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 }
 
 void Shader::setMaterial(const Material &material) const{
-    glUniform1i(glGetUniformLocation(ID, "material.diffuse"), material.textureUnit);
-    glUniform3f(glGetUniformLocation(ID, "material.specular"), material.specular.x,material.specular.y,material.specular.z);
+    glUniform1i(glGetUniformLocation(ID, "material.diffuse"), material.diffuse);
+    glUniform1i(glGetUniformLocation(ID, "material.specular"), material.specular);
+    glUniform1i(glGetUniformLocation(ID, "material.emission"), material.emission);
     glUniform1f(glGetUniformLocation(ID,"material.shininess"), material.shininess);
 }
 

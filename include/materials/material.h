@@ -13,13 +13,12 @@
 
 class Material{
 public:
-    unsigned int textureID;
-    int textureUnit;
-    glm::vec3 specular;
+    unsigned int diffuse;
+    unsigned int specular;
+    unsigned int emission;
     float shininess;
 
-    Material(unsigned int textureID = 0, int textureUnit = 0, glm::vec3 specular = glm::vec3(0.0f,0.0f,0.0f), float shininess = 0.0f);                                                                                                                                   
-    Material(unsigned int textureID, int textureUnit,float specr, float specg, float specb, float shinines);
+    Material(unsigned int diffuse = 0, unsigned int specular = 0, unsigned int emission = 0, float shininess = 0.0f);
 };
 
 #endif

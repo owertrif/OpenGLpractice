@@ -133,14 +133,16 @@ int main(){
     glm::mat4 view;
 
     glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(2.0f,0.0f,2.0f));
     glm::mat4 model2 = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
 
     //Genereting texture
-    unsigned int  textureID = loadTexture("container2.png");
-    int textureUnit = 0;
+    unsigned int  deffuseMap = loadTexture("container2.png");
+    unsigned int  specularMap = loadTexture("container2_specular.png");
+    unsigned int  emissionMap = loadTexture("matrix.jpg");
 
-    Material containerMat(textureID,textureUnit,glm::vec3(0.5f,0.5f,0.5f), 32.0f);
+    Material containerMat(deffuseMap,specularMap, emissionMap, 64.0f);
 
     while(!glfwWindowShouldClose(window)){
         processInput(window);
@@ -156,22 +158,31 @@ int main(){
         shaderProgram.setVec3("light.position", lightPos);
         shaderProgram.setVec3("viewPos", camera.GetPos());
 
-        shaderProgram.setVec3("light.ambient", 1.0f,1.0f,1.0f);
-        shaderProgram.setVec3("light.diffuse", 1.0f,1.0f,1.0f);
+        shaderProgram.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        shaderProgram.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
         shaderProgram.setVec3("light.specular", 1.0f,1.0f,1.0f);
 
         shaderProgram.setMaterial(containerMat);
 
         model = glm::mat4(1.0f);
         view = camera.GetViewMatrix();
-        model = glm::translate(model, glm::vec3(sin(glfwGetTime())*2.0f + lightPos.x,0.0f, cos(glfwGetTime())*2.0f + lightPos.z));
-        model = glm::rotate(model, glm::radians(-(float)glfwGetTime()*100.0f),glm::vec3(0.0f,1.0f,0.0f));
-        
+        model = glm::translate(model, glm::vec3(0.0f,0.0f,-2.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f,1.0f,0.0f));
+
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f,100.0f);
         
         shaderProgram.setMat4("view",view);
         shaderProgram.setMat4("projection",projection);
         shaderProgram.setMat4("model",model);
+
+        glActiveTexture(GL_TEXTURE0 + containerMat.diffuse);
+        glBindTexture(GL_TEXTURE_2D,containerMat.diffuse);
+
+        glActiveTexture(GL_TEXTURE0 + containerMat.specular);
+        glBindTexture(GL_TEXTURE_2D, containerMat.specular);
+
+        glActiveTexture(GL_TEXTURE0 + containerMat.emission);
+        glBindTexture(GL_TEXTURE_2D, containerMat.emission);
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0 ,36);
