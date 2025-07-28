@@ -28,7 +28,7 @@ const float radius = 10.0f;
 float currentFrame = 0.0f;
 float deltatime = 0.0f;
 
-glm::vec3 lightPos(0.0f,0.0f, 0.0f);
+glm::vec3 lightPos(1.2f,1.0f, 2.0f);
 
 //data
 float vertices[] = {
@@ -142,7 +142,7 @@ int main(){
     unsigned int  specularMap = loadTexture("container2_specular.png");
     unsigned int  emissionMap = loadTexture("matrix.jpg");
 
-    Material containerMat(deffuseMap,specularMap, emissionMap, 64.0f);
+    Material containerMat(deffuseMap,specularMap, emissionMap, 32.0f);
 
     glm::vec3 cubePositions[] = {
         glm::vec3( 0.0f,  0.0f,  0.0f),
@@ -168,15 +168,19 @@ int main(){
         //drawing cube with material
         shaderProgram.use();
         
-        shaderProgram.setVec3("light.position", lightPos);
+        shaderProgram.setVec3("light.position", camera.GetPos());
         shaderProgram.setVec3("viewPos", camera.GetPos());
+        shaderProgram.setVec3("light.direction", camera.GetFront());
+        shaderProgram.setFloat("light.cutOff",glm::cos(glm::radians(12.5f)));
+        shaderProgram.setFloat("light.outerCutOff",glm::cos(glm::radians(17.5f)));
 
-        shaderProgram.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-        shaderProgram.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+
+        shaderProgram.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+        shaderProgram.setVec3("light.diffuse", 0.8f, 0.8f, 0.8);
         shaderProgram.setVec3("light.specular", 1.0f,1.0f,1.0f);
-        shaderProgram.setFloat("loght.constant", 1.0f);
-        shaderProgram.setFloat("loght.linear", 0.09f);
-        shaderProgram.setFloat("loght.quadratic", 0.032f);
+        shaderProgram.setFloat("light.constant", 1.0f);
+        shaderProgram.setFloat("light.linear", 0.09f);
+        shaderProgram.setFloat("light.quadratic", 0.032f);
     
         shaderProgram.setMaterial(containerMat);
 
@@ -197,9 +201,6 @@ int main(){
         glActiveTexture(GL_TEXTURE0 + containerMat.specular);
         glBindTexture(GL_TEXTURE_2D, containerMat.specular);
 
-        glActiveTexture(GL_TEXTURE0 + containerMat.emission);
-        glBindTexture(GL_TEXTURE_2D, containerMat.emission);
-
         glBindVertexArray(VAO);
         for(unsigned int i = 0; i < 10; i++){
             model = glm::mat4(1.0f);
@@ -212,16 +213,16 @@ int main(){
             glDrawArrays(GL_TRIANGLES, 0 ,36);
         }
         //draw light scource
-        shaderProgramLight.use();
-        shaderProgramLight.setMat4("projection", projection);
-        shaderProgramLight.setMat4("view", view);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
-        model = glm::scale(model, glm::vec3(0.2f));
-        shaderProgramLight.setMat4("model",model);
+       // shaderProgramLight.use();
+       // shaderProgramLight.setMat4("projection", projection);
+       // shaderProgramLight.setMat4("view", view);
+       // model = glm::mat4(1.0f);
+       // model = glm::translate(model, lightPos);
+       // model = glm::scale(model, glm::vec3(0.2f));
+       // shaderProgramLight.setMat4("model",model);
 
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES,0,36);
+       // glBindVertexArray(lightVAO);
+       // glDrawArrays(GL_TRIANGLES,0,36);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

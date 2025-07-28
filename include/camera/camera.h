@@ -46,6 +46,7 @@ public:
     void ProcessKeyboard(Camera_Movement direction, float deltaTime);
     void ProcessMouseMovement(float xoffset,float yoffset, GLboolean constrainPitch = false);
 
+    glm::vec3 GetFront()const;
     glm::vec3 GetPos()const;
 };
 
