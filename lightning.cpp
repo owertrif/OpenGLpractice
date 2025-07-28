@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <vector>
 #include "math.h"
 #include "shader/shader.h"
 #include "camera/camera.h"
@@ -157,6 +158,15 @@ int main(){
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
+    std::vector<glm::vec3> lightCubesPositions = {
+        glm::vec3( 0.7f,  0.2f,  2.0f),
+        glm::vec3( 2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3( 0.0f,  0.0f, -3.0f)
+    };
+
+    
+
     while(!glfwWindowShouldClose(window)){
         processInput(window);
         glClearColor(0.1f,0.1f, 0.1f, 1.0f);
@@ -181,6 +191,16 @@ int main(){
         shaderProgram.setFloat("light.constant", 1.0f);
         shaderProgram.setFloat("light.linear", 0.09f);
         shaderProgram.setFloat("light.quadratic", 0.032f);
+        
+        for (int i = 0; i < 4; i++){
+            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].position", lightCubesPositions[i]);
+            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].ambient", 0.1f, 0.1f, 0.1f);
+            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].diffuse", 0.8f, 0.8f, 0.8);
+            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].specular", 1.0f,1.0f,1.0f);
+            shaderProgram.setFloat("spotLights["+std::to_string(i)+"].constant", 1.0f);
+            shaderProgram.setFloat("spotLights["+std::to_string(i)+"].linear", 0.09f);
+            shaderProgram.setFloat("spotLights["+std::to_string(i)+"].quadratic", 0.032f);
+        }
     
         shaderProgram.setMaterial(containerMat);
 
@@ -213,16 +233,18 @@ int main(){
             glDrawArrays(GL_TRIANGLES, 0 ,36);
         }
         //draw light scource
-       // shaderProgramLight.use();
-       // shaderProgramLight.setMat4("projection", projection);
-       // shaderProgramLight.setMat4("view", view);
-       // model = glm::mat4(1.0f);
-       // model = glm::translate(model, lightPos);
-       // model = glm::scale(model, glm::vec3(0.2f));
-       // shaderProgramLight.setMat4("model",model);
-
-       // glBindVertexArray(lightVAO);
-       // glDrawArrays(GL_TRIANGLES,0,36);
+       shaderProgramLight.use();
+       shaderProgramLight.setMat4("projection", projection);
+       shaderProgramLight.setMat4("view", view);
+       for(const auto& pos : lightCubesPositions){
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, pos);
+            model = glm::scale(model, glm::vec3(0.2f));
+            shaderProgramLight.setMat4("model",model);
+        
+            glBindVertexArray(lightVAO);
+            glDrawArrays(GL_TRIANGLES,0,36);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -40,10 +40,15 @@ struct Light {
 in vec3 FragPos;  
 in vec3 Normal;  
 in vec2 TexCoords;
-  
+
+#define SPOT_LIGHTS_NUM 4
+
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
+uniform SpotLight spotLights[SPOT_LIGHTS_NUM];
+
+vec3 ComputeSpotLight(SpotLight spotlight);
 
 void main()
 {    
@@ -75,27 +80,32 @@ void main()
     ambient  *= attenuation;
     specular *= attenuation;
     diffuse  *= attenuation;
-
+    
     vec3 result = ambient + diffuse +specular;
+    
+    for(int i = 0; i < SPOT_LIGHTS_NUM; i++){
+        result += ComputeSpotLight(spotLights[i]);
+    }
+
     FragColor = vec4(result, 1.0);
     
 } 
 
-vec3 ComputeSpotLight(){
-    vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
+vec3 ComputeSpotLight(SpotLight spotlight){
+    vec3 ambient = spotlight.ambient * texture(material.diffuse, TexCoords).rgb;
 
-    vec3 lightDir = normalize(light.position - FragPos);
+    vec3 lightDir = normalize(spotlight.position - FragPos);
     vec3 norm = normalize(Normal);
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
+    vec3 diffuse = spotlight.diffuse * diff * texture(material.diffuse, TexCoords).rgb;
 
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * texture(material.specular,TexCoords).rgb;  
+    vec3 specular = spotlight.specular * spec * texture(material.specular,TexCoords).rgb;  
         
-    float distance = length(light.position - FragPos);
-    float attenuation = 1.0/(light.constant + light.linear * distance + light.quadratic * (distance*distance));
+    float distance = length(spotlight.position - FragPos);
+    float attenuation = 1.0/(spotlight.constant + spotlight.linear * distance + spotlight.quadratic * (distance*distance));
 
     ambient  *= attenuation;
     specular *= attenuation;
