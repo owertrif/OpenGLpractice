@@ -169,7 +169,7 @@ int main(){
 
     while(!glfwWindowShouldClose(window)){
         processInput(window);
-        glClearColor(0.1f,0.1f, 0.1f, 1.0f);
+        glClearColor(1.0f,1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         deltatime = glfwGetTime() - currentFrame;
@@ -178,6 +178,7 @@ int main(){
         //drawing cube with material
         shaderProgram.use();
         
+        //spot light
         shaderProgram.setVec3("light.position", camera.GetPos());
         shaderProgram.setVec3("viewPos", camera.GetPos());
         shaderProgram.setVec3("light.direction", camera.GetFront());
@@ -192,16 +193,23 @@ int main(){
         shaderProgram.setFloat("light.linear", 0.09f);
         shaderProgram.setFloat("light.quadratic", 0.032f);
         
+        //poimt lights
         for (int i = 0; i < 4; i++){
-            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].position", lightCubesPositions[i]);
-            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].ambient", 0.1f, 0.1f, 0.1f);
-            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].diffuse", 0.8f, 0.8f, 0.8);
-            shaderProgram.setVec3("spotLights["+std::to_string(i)+"].specular", 1.0f,1.0f,1.0f);
-            shaderProgram.setFloat("spotLights["+std::to_string(i)+"].constant", 1.0f);
-            shaderProgram.setFloat("spotLights["+std::to_string(i)+"].linear", 0.09f);
-            shaderProgram.setFloat("spotLights["+std::to_string(i)+"].quadratic", 0.032f);
+            shaderProgram.setVec3("pointLights["+std::to_string(i)+"].position", lightCubesPositions[i]);
+            shaderProgram.setVec3("pointLights["+std::to_string(i)+"].ambient", 0.1f, 0.1f, 0.1f);
+            shaderProgram.setVec3("pointLights["+std::to_string(i)+"].diffuse", 0.8f, 0.8f, 0.8);
+            shaderProgram.setVec3("pointLights["+std::to_string(i)+"].specular", 1.0f,1.0f,1.0f);
+            shaderProgram.setFloat("pointLights["+std::to_string(i)+"].constant", 1.0f);
+            shaderProgram.setFloat("pointLights["+std::to_string(i)+"].linear", 0.09f);
+            shaderProgram.setFloat("pointLights["+std::to_string(i)+"].quadratic", 0.032f);
         }
-    
+        
+        //direct light
+        shaderProgram.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+        shaderProgram.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+        shaderProgram.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+        shaderProgram.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+
         shaderProgram.setMaterial(containerMat);
 
         model = glm::mat4(1.0f);
